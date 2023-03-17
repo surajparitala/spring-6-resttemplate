@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author surajparitala
@@ -20,14 +21,17 @@ public class BeerClientImpl implements BeerClient {
     private static final String GET_BEER_PATH="/api/v1/beer";
 
     @Override
-    public Page<BeerDTO> listBeers() {
-        RestTemplate restTemplate= restTemplateBuilder.build();
+    public Page<BeerDTO> listBeers(String beerName) {
 
-//        ResponseEntity<String> stringResponse =
-//                restTemplate.getForEntity("http://localhost:8080/api/v1/beer", String.class);
+        RestTemplate restTemplate= restTemplateBuilder.build();
+        UriComponentsBuilder uriComponentsBuilder= UriComponentsBuilder.fromPath(GET_BEER_PATH);
+
+        if (beerName != null) {
+            uriComponentsBuilder.queryParam("beerName", beerName);
+        }
 
             ResponseEntity<BeerDTOPageImpl> response=
-                    restTemplate.getForEntity(GET_BEER_PATH, BeerDTOPageImpl.class);
+                    restTemplate.getForEntity(uriComponentsBuilder.toUriString(), BeerDTOPageImpl.class);
         return response.getBody();
     }
 }
