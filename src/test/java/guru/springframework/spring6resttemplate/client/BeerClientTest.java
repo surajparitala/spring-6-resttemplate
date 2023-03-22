@@ -23,11 +23,11 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
@@ -68,8 +68,20 @@ class BeerClientTest {
         assertThat(beerDTOS.getContent().size()).isPositive();
     }
 
+    @Test
+    void testGetBeerById() throws JsonProcessingException {
+        BeerDTO beerDTO = getBeerDTO();
+        String response = objectMapper.writeValueAsString(beerDTO);
+        server.expect(method(HttpMethod.GET)).andExpect(requestToUriTemplate(URL+BeerClientImpl.GET_BEER_BY_ID, beerDTO.getId()))
+                .andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
+
+        BeerDTO beerById = beerClient.getBeerById(beerDTO.getId());
+        assertThat(beerById.getId()).isEqualTo(beerById.getId());
+    }
+
     BeerDTO getBeerDTO() {
         return BeerDTO.builder()
+                .id(UUID.randomUUID())
                 .price(BigDecimal.valueOf(10.99))
                 .beerName("Mango")
                 .beerStyle(BeerStyle.IPA)
