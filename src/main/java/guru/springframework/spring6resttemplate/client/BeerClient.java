@@ -18,4 +18,6 @@ public interface BeerClient {
         BeerDTO getBeerById(UUID beerId);
 
         BeerDTO saveBeer(BeerDTO beerDTO);
+
+        BeerDTO updateBeer(BeerDTO savedDTO);
 }
