@@ -24,7 +24,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -40,7 +39,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
  */
 @RestClientTest(BeerClientImpl.class)
 @Import(RestTemplateBuilderConfig.class)
-class BeerClientTest {
+class BeerClientMockTest {
     BeerClient beerClient;
     MockRestServiceServer server;
     @Autowired
@@ -129,6 +128,23 @@ class BeerClientTest {
        assertThrows(HttpClientErrorException.class ,() -> beerClient.deleteBeer(dto.getId()));
        server.verify();
     }
+
+    @Test
+    void testListBeersWithQueryParam() throws JsonProcessingException {
+        String payload = objectMapper.writeValueAsString(getPage());
+
+        URI uri = UriComponentsBuilder.fromHttpUrl(URL + BeerClientImpl.GET_BEER_PATH)
+                .queryParam("beerName", "ALE")
+                .build().toUri();
+
+        server.expect(method(HttpMethod.GET)).andExpect(requestTo(uri)).andExpect(queryParam("beerName", "ALE"))
+                .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
+
+        Page<BeerDTO> beerDTOS = beerClient.listBeers("ALE", null, null, null, null);
+        assertThat(beerDTOS.getContent()).isNotEmpty();
+        assertThat(beerDTOS.getContent()).hasSize(1);
+    }
+
 
     BeerDTO getBeerDTO() {
         return BeerDTO.builder()
