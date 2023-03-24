@@ -36,10 +36,12 @@ public class RestTemplateBuilderConfig {
         return authorizedClientServiceOAuth2AuthorizedClientManager;
     }
     @Bean
-    RestTemplateBuilder restTemplateBuilder(RestTemplateBuilderConfigurer configurer) {
+    RestTemplateBuilder restTemplateBuilder(RestTemplateBuilderConfigurer configurer,
+                                            OAuthClientInterceptor interceptor) {
         assert rootUrl != null;
 
         return configurer.configure(new RestTemplateBuilder())
+                .additionalInterceptors(interceptor)
                 .uriTemplateHandler(new DefaultUriBuilderFactory(rootUrl));
     }
 }
