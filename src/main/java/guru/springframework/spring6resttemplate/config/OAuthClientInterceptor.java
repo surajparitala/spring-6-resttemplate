@@ -24,15 +24,13 @@ import static java.util.Objects.isNull;
  * @author surajparitala
  * Date: 3/24/23
  */
-
 @Component
 public class OAuthClientInterceptor implements ClientHttpRequestInterceptor {
-
     private final OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
     private final Authentication authentication;
     private final ClientRegistration clientRegistration;
 
-    public OAuthClientInterceptor(OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager, ClientRegistrationRepository clientRegistrationRepository) {
+    public OAuthClientInterceptor(OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager,  ClientRegistrationRepository clientRegistrationRepository) {
         this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
         this.authentication = createPrincipal();
         this.clientRegistration = clientRegistrationRepository.findByRegistrationId("springauth");
@@ -40,23 +38,24 @@ public class OAuthClientInterceptor implements ClientHttpRequestInterceptor {
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-        OAuth2AuthorizeRequest oAuth2AuthorizeRequest= OAuth2AuthorizeRequest.
-                withClientRegistrationId(clientRegistration.getRegistrationId())
+        OAuth2AuthorizeRequest oAuth2AuthorizeRequest = OAuth2AuthorizeRequest
+                .withClientRegistrationId(clientRegistration.getRegistrationId())
                 .principal(createPrincipal())
                 .build();
 
         OAuth2AuthorizedClient client = oAuth2AuthorizedClientManager.authorize(oAuth2AuthorizeRequest);
 
-        if (isNull(client)){
-            throw new IllegalArgumentException("Missing Credentials");
+        if (isNull(client)) {
+            throw new IllegalStateException("Missing credentials");
         }
-        request.getHeaders().add(
-                HttpHeaders.AUTHORIZATION, "Bearer" +client.getAccessToken().getTokenValue());
+
+        request.getHeaders().add(HttpHeaders.AUTHORIZATION,
+                "Bearer "  + client.getAccessToken().getTokenValue());
 
         return execution.execute(request, body);
     }
 
-    private Authentication createPrincipal(){
+    private Authentication createPrincipal() {
         return new Authentication() {
             @Override
             public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -85,7 +84,6 @@ public class OAuthClientInterceptor implements ClientHttpRequestInterceptor {
 
             @Override
             public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-
             }
 
             @Override
